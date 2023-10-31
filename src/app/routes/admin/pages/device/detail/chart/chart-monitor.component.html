@@ -1,0 +1,95 @@
+<h2>
+  {{nameDevice}}
+  <button class="btn-back" nzType="primary" nz-button (click)="backClicked()"><i class="las la-angle-left"></i> Go Back</button>
+</h2>
+<div class="gn-mb-20" nz-row [nzGutter]="15" nzJustify="space-around" nzAlign="middle">
+  <div nz-col nzXs="24" nzSm="12" nzMd="16">
+    <h2 class="gn-mt-10 gn-float-left gn-width-100">
+      Biểu đồ điện áp pin
+      <div class="gn-float-right">
+        <button nz-button nzType="primary" class="gn-mr-5" (click)="handleChangeSizeBattery(20)"><i class="las la-plus "></i> 20 mẫu</button>
+        <button nz-button nzType="primary" (click)="handleChangeSizeBattery(100)"><i class="las la-plus "></i> 100 mẫu</button>
+      </div>
+    </h2>
+    <div id="chart-time-series" class="gn-mt-5 gn-float-left gn-width-100" style="height: 300px;"></div>
+  </div>
+  <div nz-col nzXs="24" nzSm="12" nzMd="8">
+    <app-geneat-datatable
+      class="gn-table"
+      [save]="false"
+      [showSearch]="false"
+      [columns]="columnsBattery"
+      [data]="battery"
+      rowHeight="25px"
+    ></app-geneat-datatable>
+  </div>
+</div>
+
+<div class="gn-mb-20" nz-row [nzGutter]="15" nzJustify="space-around" nzAlign="middle">
+  <div nz-col nzXs="24" nzSm="12" nzMd="16">
+    <h2 class="gn-mt-10 gn-float-left gn-width-100">
+      Biểu đồ tốc độ upload
+      <div class="gn-float-right">
+        <button nz-button nzType="primary" class="gn-mr-5" (click)="handleChangeSizeUploadSpeed(20)"><i class="las la-plus "></i> 20 mẫu</button>
+        <button nz-button nzType="primary" (click)="handleChangeSizeUploadSpeed(100)"><i class="las la-plus "></i> 100 mẫu</button>
+      </div>
+    </h2>
+    <div id="chart-upload-speed" class="gn-mt-5 gn-float-left gn-width-100" style="height: 300px;"></div>
+  </div>
+  <div nz-col nzXs="24" nzSm="12" nzMd="8">
+    <app-geneat-datatable
+      class="gn-table"
+      [save]="false"
+      [showSearch]="false"
+      [columns]="columnsUploadSpeed"
+      [data]="uploadSpeed"
+      rowHeight="25px"
+    ></app-geneat-datatable>
+  </div>
+</div>
+
+<div class="gn-mb-20" nz-row [nzGutter]="15" nzJustify="space-around" nzAlign="middle">
+  <div nz-col nzXs="24" nzSm="12" nzMd="16">
+    <h2 class="gn-mt-10 gn-float-left gn-width-100">
+      Biểu đồ nhiệt độ
+      <div class="gn-float-right">
+        <button nz-button nzType="primary" class="gn-mr-5" (click)="handleChangeSizeTemperature(20)"><i class="las la-plus "></i> 20 mẫu</button>
+        <button nz-button nzType="primary" (click)="handleChangeSizeTemperature(100)"><i class="las la-plus "></i> 100 mẫu</button>
+      </div>
+    </h2>
+    <div id="chart-temperature" class="gn-mt-5 gn-float-left gn-width-100" style="height: 300px;"></div>
+  </div>
+  <div nz-col nzXs="24" nzSm="12" nzMd="8">
+    <app-geneat-datatable
+      class="gn-table"
+      [save]="false"
+      [showSearch]="false"
+      [columns]="columnsTemperature"
+      [data]="temperature"
+      rowHeight="25px"
+    ></app-geneat-datatable>
+  </div>
+</div>
+
+<div class="gn-mb-20" nz-row [nzGutter]="15" nzJustify="space-around" nzAlign="middle">
+  <div nz-col nzXs="24" nzSm="12" nzMd="16">
+    <h2 class="gn-mt-10 gn-float-left gn-width-100">
+      Biểu đồ độ ẩm
+      <div class="gn-float-right">
+        <button nz-button nzType="primary" class="gn-mr-5" (click)="handleChangeSizeHumidity(20)"><i class="las la-plus "></i> 20 mẫu</button>
+        <button nz-button nzType="primary" (click)="handleChangeSizeHumidity(100)"><i class="las la-plus "></i> 100 mẫu</button>
+      </div>
+    </h2>
+    <div id="chart-humidity" class="gn-mt-5 gn-float-left gn-width-100" style="height: 300px;"></div>
+  </div>
+  <div nz-col nzXs="24" nzSm="12" nzMd="8">
+    <app-geneat-datatable
+      class="gn-table"
+      [save]="false"
+      [showSearch]="false"
+      [columns]="columnsHumidity"
+      [data]="humidity"
+      rowHeight="25px"
+    ></app-geneat-datatable>
+  </div>
+</div>

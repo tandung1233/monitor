@@ -1,0 +1,106 @@
+<app-geneat-datatable
+  [display]="2"
+  #myTable
+  [columns]="listOfColumns"
+  [data]="listOfData"
+  [loading]="isLoading"
+  (ngChange)="onChange($event)"
+  [renderGrid]="renderGrid"
+  [filterGrid]="filterGrid"
+  [pageSizeOptions]="[24, 48, 72, 96]"
+  [showPagination]="false"
+  [width]="'1500px'"
+  [showSearch]="false"
+  [showLayout]="false"
+>
+  <ng-template #filterGrid>
+    <div class="mb-24" nz-row nzJustify="flex-start">
+      <nz-button-group class="gn-mr-10">
+        <ng-template [ngForOf]="listFilter" ngFor let-item>
+          <button nz-button [nzType]="filter['filter'] === item.value && 'primary'"
+              (click)="handleChangeType(item.value, 'filter')">{{item.name}}</button>
+        </ng-template>
+      </nz-button-group>
+    </div>
+  </ng-template>
+  <ng-template #renderGrid let-item let-i="index">
+    <nz-card class="device gn-mb-10" [ngClass]="{'gn-bg-light-blue': item.status == 2, 'gn-bg-light-success': item.status == 1 && item.heartbeatStatus === 2, 'gn-bg-light-danger': item.status == 0}" nzSize="small">
+      <a [href]="'#/d/' + item.name" target="_self"
+        class="gn-font-bold device-title gn-color-dark">
+        {{i + 1}}. {{item.name}}
+        <nz-tag *ngIf="item.heartbeatStatus === 2" class="gn-color-black gn-bg-yellow">CMD</nz-tag>
+        <nz-tag *ngIf="item.lastDoorErrorState" nzColor="#EB445A">{{item.lastDoorErrorState}}</nz-tag>
+        <nz-tag *ngIf="item.lastCamErrorState" nzColor="#EB445A">{{item.lastCamErrorState}}</nz-tag>
+      </a>
+      <div nz-row [nzGutter]="15" nzJustify="space-around" nzAlign="middle">
+        <div nz-col nzFlex="auto">
+          <div class="gn-position-relative">
+            <nz-progress
+              nzType="line"
+              [nzStatus]="item.freeSpace < 2048 ? item.freeSpace < 1024 ? 'exception' : 'active' : 'normal'"
+              [nzStrokeWidth]="10"
+              [nzShowInfo]="false"
+              [nzPercent]="formatNumber(100 - ((item.freeSpace / item.totalSpace) * 100))"></nz-progress>
+              <div *ngIf="item.freeSpace < 2048" class="gn-position-absolute free-space-progress">
+                {{item.freeSpace}}
+              </div>
+          </div>
+        </div>
+        <div *ngIf="item?.batteryVolt" nz-col nzFlex="20px">
+          <nz-tag class="gn-font-13 gn-text-right gn-mr-0" [ngClass]="{'gn-bg-warning': item?.batteryVolt < 11.8, 'gn-color-info': item?.batteryVolt >= 11.8}">
+            {{formatFloat(item?.batteryVolt)}}V
+          </nz-tag>
+        </div>
+      </div>
+      <div class="gn-float-left gn-width-100" [ngClass]="{'gn-color-red': item.lastUpdatedMinsAgo > 5 && item.status != 2, 'gn-color-info': !(item.lastUpdatedMinsAgo > 5) || item.status == 2}">
+        <strong>
+            <span *ngIf="item.lastUpdatedMinsAgo <= 99">
+              <span class="gn-color-info">{{(item.lastUpdate | date:'HH:mm')}}</span> {{item.lastUpdatedMinsAgo + 'm'}}
+            </span>
+          <span *ngIf="item.lastUpdatedMinsAgo > 99">
+              {{(item.lastUpdate | date:'HH:mm dd/MM')}}
+            </span>
+        </strong>
+        <strong class="gn-float-right">
+          <span *ngIf="item.status === 1">OK</span>
+          <span *ngIf="item.status === 0" class="gn-color-muted">OFF</span>
+          <span *ngIf="item.status === 2" class="gn-font-semibold gn-color-muted">SLEEP <span *ngIf="item.wakeTime">({{item.wakeTime | date:'HH:mm'}})</span></span>
+        </strong>
+      </div>
+      <div class="gn-float-left gn-width-100" [ngClass]="{'gn-color-red': item.lastCapturedMinsAgo > 75, 'gn-color-info': !(item.lastCapturedMinsAgo > 75)}">
+        <strong>
+            <span *ngIf="item.lastCapturedMinsAgo <= 99">
+              <span class="gn-color-info">{{(item.lastCapturedTime | date:'HH:mm')}}</span> {{item.lastCapturedMinsAgo + 'm'}}
+            </span>
+          <span *ngIf="item.lastCapturedMinsAgo > 99">
+              {{(item.lastCapturedTime | date:'HH:mm dd/MM')}}
+            </span>
+        </strong>
+        <strong class="gn-float-right"><span [ngClass]="{'border-bottom': item.lastCapturedImage != item.lastUploadedImage}" >{{ item.lastCapturedImage && item.lastCapturedImage.replace(".jpg", "")}}</span></strong>
+      </div>
+      <div class="gn-float-left gn-width-100" [ngClass]="{'gn-color-red': item.lastUploadedMinsAgo > 75, 'gn-color-info': !(item.lastUploadedMinsAgo > 75)}">
+        <strong>
+            <span *ngIf="item.lastUploadedMinsAgo <= 99">
+              <span class="gn-color-info">{{(item.lastUploadedTime | date:'HH:mm')}}</span> {{item.lastUploadedMinsAgo + 'm'}}
+            </span>
+          <span *ngIf="item.lastUploadedMinsAgo > 99">
+              {{(item.lastUploadedTime | date:'HH:mm dd/MM')}}
+            </span>
+        </strong>
+        <strong class="gn-float-right">{{ item.lastUploadedImage && item.lastUploadedImage.replace(".jpg", "")}}</strong>
+      </div>
+      <div class="device-info gn-color-info gn-float-left gn-width-100">
+        <div class="device-version">
+          <span *ngIf="item.version">{{item.version}}</span>
+          <span *ngIf="item.backupVersion">/{{item.backupVersion}}</span>
+          <span *ngIf="item.networkMode">/{{item.networkMode}}</span>
+          <span *ngIf="item.hasMqtt">/mq</span>
+        </div>
+        <div class="device-up-speed gn-float-right">
+          <span *ngIf="item?.uploadSpeed" [ngClass]="{'gn-bg-warning': item?.uploadSpeed < 60}">{{item?.uploadSpeed}}KB/s </span>
+          <span style="margin-left:3px" *ngIf="!(item?.isCaptureThreadAlive === true && item?.isUploadThreadAlive === true && item?.isMaintainThreadAlive === true)" class="tag" [ngClass]="{'gn-bg-gray': item?.isCaptureThreadAlive === null && item?.isUploadThreadAlive === null && item?.isMaintainThreadAlive === null, 'gn-bg-warning': item?.isCaptureThreadAlive === false || item?.isUploadThreadAlive === false || item?.isMaintainThreadAlive === false}"></span>
+        </div>
+      </div>
+    </nz-card>
+  </ng-template>
+</app-geneat-datatable>

@@ -1,0 +1,92 @@
+<ng-container>
+
+  <div>
+    <h5 id="header_title"></h5>
+
+
+    <div class="gn-display-inline-flex gn-display-none-md">
+      <ul nz-menu nzTheme="light" nzMode="horizontal" [nzInlineCollapsed]="isCollapsed">
+        <ng-template ngFor let-group [ngForOf]="menus">
+          <ng-template ngFor let-menu [ngForOf]="group.child">
+            <li nz-menu-item [routerLink]="menu.path" nzMatchRouter *ngIf="!menu.child">
+              <i class="{{menu.icon}}"></i>
+              <span>{{'titles.' + menu.name | translate}}</span>
+            </li>
+            <li nz-submenu [nzTitle]="submenu" *ngIf="menu.child">
+              <ng-template #submenu>
+                <i class="{{menu.icon}}"></i>
+                <span>{{'titles.' + menu.name | translate}}</span>
+              </ng-template>
+              <ul>
+                <ng-template ngFor let-subMenu [ngForOf]="menu.child">
+                  <li nz-menu-item [routerLink]="subMenu.path" nzMatchRouter>
+                    <i class="{{subMenu.icon}}"></i>
+                    <span>{{'titles.' + subMenu.name | translate}}</span>
+                  </li>
+                </ng-template>
+              </ul>
+            </li>
+          </ng-template>
+        </ng-template>
+      </ul>
+    </div>
+  </div>
+
+
+  <nz-drawer [nzVisible]="visibleProfile" nzPlacement="right" nzTitle="{{user['name']}}" [nzWidth]="370" (nzOnClose)="closeProfile()">
+    <ng-template nzDrawerContent>
+      <nz-spin [nzSpinning]="loading">
+        <div class="gn-display-none gn-display-block-md gn-width-100">
+          <ul nz-menu nzTheme="light" nzMode="inline" [nzInlineCollapsed]="isCollapsed">
+            <ng-template ngFor let-group [ngForOf]="menus">
+              <ng-template ngFor let-menu [ngForOf]="group.child">
+                <li nz-menu-item [routerLink]="menu.path" nzMatchRouter *ngIf="!menu.child">
+                  <i class="{{menu.icon}}"></i>
+                  <span>{{'titles.' + menu.name | translate}}</span>
+                </li>
+                <li nz-submenu [nzTitle]="submenu" *ngIf="menu.child">
+                  <ng-template #submenu>
+                    <i class="{{menu.icon}}"></i>
+                    <span>{{'titles.' + menu.name | translate}}</span>
+                  </ng-template>
+                  <ul>
+                    <ng-template ngFor let-subMenu [ngForOf]="menu.child">
+                      <li nz-menu-item [routerLink]="subMenu.path" nzMatchRouter>
+                        <i class="{{subMenu.icon}}"></i>
+                        <span>{{'titles.' + subMenu.name | translate}}</span>
+                      </li>
+                    </ng-template>
+                  </ul>
+                </li>
+              </ng-template>
+            </ng-template>
+          </ul>
+
+        </div>
+        <div class="gn-p-10">
+          <nz-select class="change_language gn-display-none gn-display-block-md gn-mb-10" ngModel="{{translate.getDefaultLang()}}" (ngModelChange)="changeLanguage($event)">
+            <nz-option nzValue="vi" nzLabel="Vietnam"></nz-option>
+            <nz-option nzValue="en" nzLabel="English"></nz-option>
+          </nz-select>
+          <button nz-button nzBlock nzType="primary" (click)="onLogout()">Sign Out</button>
+        </div>
+      </nz-spin>
+    </ng-template>
+
+  </nz-drawer>
+  <i class="las trigger la-bars gn-display-none gn-display-inline-flex-md" (click)="openProfile()"></i>
+
+  <div class="user-section gn-display-none-md">
+    <nz-select class="change_language" ngModel="{{translate.getDefaultLang()}}" (ngModelChange)="changeLanguage($event)">
+      <nz-option nzValue="vi" nzLabel="Vietnam"></nz-option>
+      <nz-option nzValue="en" nzLabel="English"></nz-option>
+    </nz-select>
+
+    <section class="header-action hover" (click)="openProfile()">
+      <span class="txt-username"><strong>{{user['name']}}</strong></span>
+      <nz-avatar *ngIf="user['avatarUrl']" [nzShape]="'square'" [nzSrc]="user['avatarUrl']"></nz-avatar>
+    </section>
+
+  </div>
+
+</ng-container>

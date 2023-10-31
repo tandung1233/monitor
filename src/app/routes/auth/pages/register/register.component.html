@@ -1,0 +1,18 @@
+<div class="gn-text-center mb-50">
+  <img class="gn-mb-20" src="assets/images/logo1.png" alt="" style="max-width:350px; width: 100%;" />
+  <h3>{{'routes.auth.register.title' | translate }}</h3>
+  <p><strong>{{'routes.auth.register.subTitle' | translate }}</strong></p>
+</div>
+
+<app-geneat-form
+  [columns]="columns"
+  [loading]="isLoading"
+  (handSubmit)="submitForm($event)"
+  [widthLabel]="140"
+  textSubmit="{{'routes.auth.register.title' | translate}}"
+></app-geneat-form>
+
+<div class="gn-text-center gn-mt-30">
+  <button nz-button nzType="link" [routerLink]="['/auth/login']">Đăng nhập</button>
+</div>
+

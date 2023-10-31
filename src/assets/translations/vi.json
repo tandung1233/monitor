@@ -1,0 +1,75 @@
+{
+  "components": {
+    "data-table": {
+      "pleaseEnterValueToSearch": "Nhập để tìm kiếm...",
+      "reset": "Cài lại",
+      "search": "Tìm kiếm",
+      "areYouSureWant": "Bạn có chắc là",
+      "cancel": "Huỷ bỏ",
+      "okay": "Đồng ý",
+      "items": "mục",
+      "of": "của",
+      "Table": "Bảng",
+      "Grid": "Lưới"
+    },
+    "form": {
+      "rulesRequired": "Đây là trường bắt buộc!",
+      "rulesEmail": "Vui lòng nhập địa chỉ email hợp lệ!",
+      "rulesConfirmPassword": "Hai mật khẩu bạn nhập không giống nhau",
+      "rulesMaxlength": "Độ dài tối đa là {{value}}",
+      "rulesMinlength": "Độ dài tối thiểu là {{value}}",
+      "rulesMin": "Tối thiểu là {{value}}"
+    },
+    "modal-form": {
+      "save": "Lưu lại",
+      "cancel": "Đóng lại"
+    }
+  },
+  "extends": {},
+  "titles": {
+    "Manage": "Quản lý",
+    "Dashboard": "Danh sách máy",
+    "Detail Monitor": "Chi tiết máy",
+    "Group": "Nhóm máy",
+    "Admin": "Quản trị",
+    "User": "Người dùng",
+    "Permission": "Phân quyền"
+  },
+  "columns": {},
+  "routes": {
+    "auth": {
+      "login": {
+        "title": "Đăng nhập ATL Monitor",
+        "subTitle": "",
+        "loginName": "Tên đăng nhập",
+        "password": "Mật khẩu",
+        "remember": "Ghi nhớ",
+        "loginButton" : "Đăng nhập",
+        "dontAccount": "Vẫn chưa có tài khoản?",
+        "signUp": "Đăng ký tài khoản"
+      },
+      "register": {
+        "title": "Đăng ký tài khoản",
+        "subTitle": "",
+        "email": "E-mail",
+        "password": "Mật khẩu",
+        "passwordConfirm": "Xác nhận mật khẩu",
+        "phoneNumber": "Số điện thoại",
+        "agreement": "Hợp đồng",
+        "haveAccount": "Bạn đã có tài khoản chưa",
+        "signIn": "Đăng nhập"
+      }
+    },
+    "admin": {
+      "Layout": {
+        "edit": "Sửa",
+        "delete": "Xóa",
+        "addNew": "Tạo mới",
+        "action": "Thao tác"
+      },
+      "device": {},
+      "permission": {},
+      "user": {}
+    }
+  }
+}

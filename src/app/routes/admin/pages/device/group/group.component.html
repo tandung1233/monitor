@@ -1,0 +1,108 @@
+<button nz-button nzSize="small" nzType="primary" (click)="handleAddNew()"><i class="las la-plus"></i> {{'routes.admin.Layout.addNew' | translate}}</button>
+<app-geneat-modal-form
+  [visible]="isVisible"
+  [title]="data ? ('routes.admin.Layout.edit' | translate) : ('routes.admin.Layout.addNew' | translate)"
+  (clickOk)="handleOkGroup($event)"
+  (clickCancel)="handleCancel()"
+  [columns]="listOfColumns"
+  [values]="data"
+  [loading]="isLoading"
+  [col]="2"
+  [widthLabel]="120"
+  [width]="600"
+>
+</app-geneat-modal-form>
+<smooth-dnd-container
+  [orientation]="'horizontal'"
+  (drop)="onColumnDrop($event)"
+  [dragHandleSelector]="'.column-drag-handle'"
+>
+  <smooth-dnd-draggable *ngFor="let column of scene.children; let i = index">
+    <div class="card-container" *ngIf="column">
+      <div class="card-column-header">
+        <i class="column-drag-handle las la-exchange-alt"></i>
+        {{i + 1}}. <span id="group-{{column.id}}">{{column.data.groupName}}</span>
+        <i class="las la-edit gn-float-right" (click)="handleEditGroup(column.data, i)"></i>
+      </div>
+      <smooth-dnd-container
+        [groupName]="'col'"
+        (drop)="onCardDrop(column.id, $event)"
+        [getChildPayload]="getCardPayload(column.id)"
+        [dragClass]="'card-ghost'"
+        [dropClass]="'card-ghost-drop'"
+        (dragStart)="log('drag start', $event)"
+        (dragEnd)="log('drag end', $event)"
+      >
+        <smooth-dnd-draggable *ngFor="let card of column.children; let j = index">
+          <div class="card" [ngClass]="{'gn-bg-light-success': card.data.status == 1 && card.data.heartbeatStatus === 2, 'gn-bg-light-danger': card.data.status == 0}">
+            <nz-collapse>
+
+              <nz-collapse-panel [nzShowArrow]="false" nzHeader="{{(j + 1)}}. {{card.data.name}}">
+                <div class="gn-click" (click)="goToDetailMonitor(card.data)">
+                  <div class="gn-position-relative">
+                    <nz-progress
+                      nzType="line"
+                      [nzStatus]="card.data.freeSpace < 2048 ? card.data.freeSpace < 1024 ? 'exception' : 'active' : 'normal'"
+                      [nzStrokeWidth]="20"
+                      [nzShowInfo]="false"
+                      [nzPercent]="formatNumber(100 - ((card.data.freeSpace / card.data.totalSpace) * 100))"></nz-progress>
+                    <div class="gn-position-absolute free-space-progress">{{card.data.freeSpace}}</div>
+                  </div>
+
+                  <table class="gn-width-100 table-info">
+                    <tbody>
+                    <tr [ngClass]="{'gn-color-red': card.data.lastUpdatedMinsAgo > 5}">
+                      <th>
+                        <span *ngIf="card.data.lastUpdatedMinsAgo <= 99">
+                          <span class="gn-color-info">{{(card.data.lastUpdate | date:'HH:mm')}}</span> {{card.data.lastUpdatedMinsAgo + 'm'}}
+                        </span>
+                        <span *ngIf="card.data.lastUpdatedMinsAgo > 99">
+                          {{(card.data.lastUpdate | date:'HH:mm dd/MM')}}
+                        </span>
+                      </th>
+                      <th class="gn-text-right">
+                        <span *ngIf="card.data.status === 1">OK</span>
+                        <span *ngIf="card.data.status !== 1" class="gn-color-muted">OFF</span>
+                      </th>
+                    </tr>
+                    <tr [ngClass]="{'gn-color-red': card.data.lastCapturedMinsAgo > 75}">
+                      <th>
+                        <span *ngIf="card.data.lastCapturedMinsAgo <= 99">
+                          <span class="gn-color-info">{{(card.data.lastCapturedTime | date:'HH:mm')}}</span> {{card.data.lastCapturedMinsAgo + 'm'}}
+                        </span>
+                        <span *ngIf="card.data.lastCapturedMinsAgo > 99">
+                          {{(card.data.lastCapturedTime | date:'HH:mm dd/MM')}}
+                        </span>
+                      </th>
+                      <th class="gn-text-right"><span [ngClass]="{'border-bottom': card.data.lastCapturedImage != card.data.lastUploadedImage}" >{{ card.data.lastCapturedImage && card.data.lastCapturedImage.replace(".jpg", "")}}</span></th>
+                    </tr>
+                    <tr [ngClass]="{'gn-color-red': card.data.lastUploadedMinsAgo > 75}">
+                      <th>
+                        <span *ngIf="card.data.lastUploadedMinsAgo <= 99">
+                          <span class="gn-color-info">{{(card.data.lastUploadedTime | date:'HH:mm')}}</span> {{card.data.lastUploadedMinsAgo + 'm'}}
+                        </span>
+                        <span *ngIf="card.data.lastUploadedMinsAgo > 99">
+                          {{(card.data.lastUploadedTime | date:'HH:mm dd/MM')}}
+                        </span>
+                      </th>
+                      <th class="gn-text-right">{{ card.data.lastUploadedImage && card.data.lastUploadedImage.replace(".jpg", "")}}</th>
+                    </tr>
+                    <tr>
+                      <td>{{card.data.version}}<span *ngIf="card.data.backupVersion"> / {{card.data.backupVersion}}</span><span *ngIf="card.data.hasMqtt"> / mqtt</span><span *ngIf="card.data.networkMode"> / {{card.data.networkMode}}</span></td>
+                      <td class="gn-text-right">
+                        ev {{card.data.imageEv}} / iso {{card.data.imageIso}}
+                      </td>
+                    </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </nz-collapse-panel>
+            </nz-collapse>
+
+          </div>
+        </smooth-dnd-draggable>
+      </smooth-dnd-container>
+    </div>
+  </smooth-dnd-draggable>
+</smooth-dnd-container>
+

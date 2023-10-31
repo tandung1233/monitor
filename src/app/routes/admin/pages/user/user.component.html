@@ -1,0 +1,11 @@
+<h1>Danh sách người dùng</h1>
+
+<app-geneat-datatable
+  [columns]="listOfColumns"
+  [data]="listOfData"
+  [total]="totalItem"
+  [loading]="isLoading"
+  (ngChange)="onChange($event)"
+  [pageSizeOptions]="[30, 50, 70, 100]"
+>
+</app-geneat-datatable>

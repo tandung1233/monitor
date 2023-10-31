@@ -1,0 +1,62 @@
+<h2>
+  {{nameDevice}}
+  <button class="btn-back" nzType="primary" nz-button (click)="backClicked()"><i class="las la-angle-left"></i> Go Back</button>
+</h2>
+<nz-card [nzTitle]="item.docTypeName" *ngFor="let item of infoUpload; let i = index" [nzExtra]="extraButton" style="margin-bottom:10px">
+  <ng-template #extraButton>
+    <button nz-button nzType="primary" *ngIf="!this.showList[item.docType]" (click)="handleAddImage(item.docType)">
+      <i class="las la-upload"></i> Tải ảnh lên
+    </button>
+    <button *ngIf="this.showList[item.docType]" nz-button nzType="primary" nzDanger (click)="handleAddImage(item.docType)">
+      <i class="las la-times"></i> Hủy tải ảnh
+    </button>
+  </ng-template>
+
+  <textarea class="gn-mb-10" *ngIf="showList[item.docType]" rows="3" nz-input [(ngModel)]="description[item.docType]" placeholder="Mô tả ảnh được tải lên"></textarea>
+
+  <nz-upload
+    (nzChange)="handleUpload($event, item.docType, i)"
+    [nzAction]="urlUpload + item.prefix"
+    nzListType="picture-card"
+    [(nzFileList)]="listUpload[item.docType]"
+    [nzPreview]="handlePreview"
+    [nzShowButton]="showList[item.docType]"
+    [nzShowUploadList]=""
+    [nzRemove]="handleRemove"
+    [nzFileListRender]="fileListRender"
+  >
+    <ng-template #fileListRender let-list>
+      <div nz-row nzGutter="10" *ngIf="!showList[item.docType]">
+        <ng-template [ngForOf]="list" ngFor let-item let-i="index">
+          <div nz-col [nzXs]="12" nzSm="12" nzMd="8" nzLg="6" nzXl="4">
+            <div (click)="handlePreview(item)"><img [src]="item.url" [ngStyle]="{ width: '100%' }" /></div>
+            <div>{{ item.name }}</div>
+            <button nz-button nzType="primary" nzBlock nzDanger (click)="handleRemove(item)">
+              <i class="las la-trash"></i> Xóa ảnh chụp
+            </button>
+          </div>
+        </ng-template>
+      </div>
+    </ng-template>
+    <div>
+      <i class="las la-3x la-upload"></i>
+    </div>
+  </nz-upload>
+</nz-card>
+
+<app-geneat-modal [keyboard]="true" [visible]="previewVisible" [contentModal]="modalContent" [notFooter]="true" (clickCancel)="previewVisible = false">
+  <ng-template #modalContent>
+    <div>
+      <img [src]="preview.url || preview.preview" [ngStyle]="{ width: '100%' }" />
+    </div>
+    <nz-descriptions class="gn-table-order" nzBordered [nzColumn]="1">
+      <nz-descriptions-item nzTitle="Ngày upload" *ngIf="preview.createdOnDate">{{formatDate(preview.createdOnDate)}}
+      </nz-descriptions-item>
+      <nz-descriptions-item nzTitle="Tải lên bởi" *ngIf="preview.createdByUser">{{preview.createdByUser}}
+      </nz-descriptions-item>
+      <nz-descriptions-item nzTitle="Mô tả">{{preview.description}}</nz-descriptions-item>
+    </nz-descriptions>
+  </ng-template>
+</app-geneat-modal>
+<!--[nzShowButton]="user.level === 10"-->
+<!--[nzShowUploadList] = "{showRemoveIcon: user.level === 10, showDownloadIcon: true}"-->

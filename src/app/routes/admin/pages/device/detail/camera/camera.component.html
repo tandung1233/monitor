@@ -1,0 +1,41 @@
+<div class="">
+  <h2 class="gn-float-left">
+    {{nameDevice}}
+    <button class="btn-back" nzType="primary" nz-button (click)="backClicked()"><i class="las la-angle-left"></i> Go Back</button>
+  </h2>
+  <div class="gn-float-right">
+    <button (click)="handleAddNew()" nz-button nzType="primary"><i class="las la-plus "></i> Add</button>
+  </div>
+</div>
+<div>
+  <app-geneat-datatable
+    [ngClass]="{'text-black bg-blue-500':data?.status == 'Connected','bg-red-500 text-gray-50':data?.status == 'Disconnected'}"
+    class="gn-table"
+    [save]="false"
+    [showSearch]="false"
+    [columns]="columnsCamera" 
+    [data]="camera"
+    rowHeight="25px"
+  ></app-geneat-datatable>
+</div>
+<app-geneat-modal-form
+  [title]="'Edit camera'"
+  [columns]="columnsCamera"
+  [visible]="isVisible"
+  (clickCancel)="isVisible = false"
+  (clickOk)="postCamera($event)"
+  [values]="data"
+  widthLabel="130"
+>
+</app-geneat-modal-form>
+
+<app-geneat-modal-form
+  [title]="'Add new camera'"
+  [columns]="formAdd"
+  [visible]="isVisibleAdd"
+  (clickCancel)="isVisibleAdd = false"
+  (clickOk)="postCamera($event)"
+  widthLabel="130"
+>
+</app-geneat-modal-form>
+

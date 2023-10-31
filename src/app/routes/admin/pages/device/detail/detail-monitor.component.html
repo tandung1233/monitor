@@ -1,0 +1,552 @@
+<h2>
+  {{dataDevice?.name}}
+  <button class="btn-back" nzType="primary" nz-button (click)="backClicked()"><i class="las la-angle-left"></i> Go Back</button>
+</h2>
+<div class="gn-mb-20" nz-row [nzGutter]="15" nzJustify="space-around" nzAlign="middle">
+  <div nz-col nzXs="24" nzSm="24" nzMd="8" nzLg="10">
+    <div class="gn-position-relative">
+      <nz-progress
+        nzType="line"
+        [nzStatus]="dataDevice?.freeSpace < 2048 ? dataDevice?.freeSpace < 1024 ? 'exception' : 'active' : 'normal'"
+        [nzStrokeWidth]="25"
+        [nzShowInfo]="false"
+        [nzPercent]="formatNumber(100 - ((dataDevice?.freeSpace / dataDevice?.totalSpace) * 100))"></nz-progress>
+      <div class="gn-position-absolute free-space-progress"><span>{{dataDevice?.freeSpace}} / {{dataDevice?.totalSpace}}</span></div>
+    </div>
+  </div>
+  <div nz-col nzXs="24" nzSm="24" nzMd="8" nzLg="7">
+    <div nz-row nzJustify="start" nzAlign="left">
+      <button nz-button nzType="default" class="gn-mr-5 gn-color-info">
+        <!-- <i class="las la-camera-retro"></i> -->
+        Chụp&nbsp;&nbsp;
+        <span class="tag" [ngClass]="{'gn-bg-gray': dataDevice?.isCaptureThreadAlive === null, 'gn-bg-danger': dataDevice?.isCaptureThreadAlive === false, 'gn-bg-blue': dataDevice?.isCaptureThreadAlive === true}"></span>
+      </button>
+      <button nz-button nzType="default" class="gn-mr-5">
+        <!-- <i class="las la-cloud-upload-alt"></i> -->
+        Upload&nbsp;&nbsp;
+        <span class="tag" [ngClass]="{'gn-bg-gray': dataDevice?.isUploadThreadAlive === null, 'gn-bg-danger': dataDevice?.isUploadThreadAlive === false, 'gn-bg-blue': dataDevice?.isUploadThreadAlive === true}"></span>
+      </button>
+      <button nz-button nzType="default" class="gn-mr-5">
+        <!-- <i class="las la-wrench"></i> -->
+        Bảo trì&nbsp;&nbsp;
+        <span class="tag" [ngClass]="{'gn-bg-gray': dataDevice?.isMaintainThreadAlive === null, 'gn-bg-danger': dataDevice?.isMaintainThreadAlive === false, 'gn-bg-blue': dataDevice?.isMaintainThreadAlive === true}"></span>
+      </button>
+      <button nz-button nzType="default" [ngClass]="{'gn-bg-danger': dataDevice?.batteryVolt < 11.8, '': dataDevice?.batteryVolt >= 11.8}">
+        Pin: {{dataDevice?.batteryVolt}}V
+      </button>
+    </div>
+
+  </div>
+  <div nz-col nzXs="24" nzSm="24" nzMd="8" nzLg="7">
+    <button nzSize="large" nzType="primary" nz-button (click)="goToChartMonitor()" class="gn-mr-5 gn-bg-warning"><i class="las la-chart-area"></i> Biểu đồ thông số </button>
+    <button nzSize="large" nzType="primary" nz-button (click)="goToUploadMonitor()" class="gn-mr-5 gn-bg-warning"><i class="las la-file-upload"></i> Tải tập tin lên </button>
+    <button nzSize="large" nzType="primary" nz-button (click)="goToListCamera()" class="gn-bg-warning"><i class="las la-list-alt"></i> Quản lý camera </button>
+  </div>
+</div>
+<div nz-row [nzGutter]="15">
+
+  <div nz-col nzXs="24" nzSm="24" nzMd="12" nzLg="10">
+    <h2>Device logs</h2>
+    <app-geneat-datatable
+      class="table-logs table-small"
+      [showCount]="false"
+      [showHeader]="false"
+      [showPagination]="false"
+      [save]="false"
+      [showSearch]="false"
+      [columns]="columnsLog"
+      [data]="log"
+      rowHeight="20px"
+    ></app-geneat-datatable>
+    <div class="gn-text-center gn-mt-10">
+      <button
+        nz-button
+        nzType="primary"
+        class="gn-mr-5"
+        (click)="handleRefreshLog()"
+      >
+        <i class="las la-redo-alt"></i>
+        Refresh logs
+      </button>
+      <button
+        nz-button
+        nzType="primary"
+        (click)="handleLoadMoreLog()"
+      >
+        <i class="las la-retweet"></i>
+        Show more logs
+      </button>
+    </div>
+    <h2 class="gn-mt-10">Metadata</h2>
+    <app-geneat-datatable
+      class="table-small"
+      [showCount]="false"
+      [showHeader]="false"
+      [save]="false"
+      [showSearch]="false"
+      [columns]="columnsMetadata"
+      [data]="metadata"
+      [showPagination]="false"
+      rowHeight="20px"
+    ></app-geneat-datatable>
+
+    <h2 class="gn-mt-10 gn-float-left gn-width-100">
+      Biểu đồ điện áp pin
+      <div class="gn-float-right">
+        <button nz-button nzType="primary" class="gn-mr-5" (click)="handleChangeSize(20)"><i class="las la-plus "></i> 20 mẫu</button>
+        <button nz-button nzType="primary" (click)="handleChangeSize(100)"><i class="las la-plus "></i> 100 mẫu</button>
+      </div>
+    </h2>
+    <div id="chart-time-series" class="gn-mt-5 gn-float-left gn-width-100" style="height: 200px;"></div>
+    <div style="clear: both;"></div>
+    <h2 class="gn-mt-20">
+      Danh sách lỗi
+      <div class="gn-float-right">
+        <button nz-button nzType="primary"
+                nz-popconfirm
+                nzPopconfirmTitle="Are you sure delete this task?"
+                (nzOnConfirm)="handleDeleteError()"
+        ><i class="las la-trash "></i> Xóa lỗi</button>
+      </div>
+    </h2>
+    <app-geneat-datatable
+      class="gn-table"
+      [save]="false"
+      [showSearch]="false"
+      [columns]="columnsError"
+      [data]="error"
+      [showPagination]="false"
+      rowHeight="25px"
+    ></app-geneat-datatable>
+
+    <h2 class="gn-mt-20" *ngIf="images?.length > 0">Ảnh chụp test</h2>
+    <div nz-row nzAlign="bottom" nzGutter="10">
+      <div class="gn-mb-10 gn-text-center" nz-col nzSm="24" nzMd="12" nzLg="8" *ngFor="let image of images">
+        <a href="{{image.url}}" target="_blank">
+          <img src="{{image.url}}" class="gn-width-100">
+        </a>
+        <span>{{image.createdOnDate | date:'HH:mm:ss dd/MM' }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div nz-col nzXs="24" nzSm="24" nzMd="12" nzLg="7">
+    <h2 class="gn-float-left gn-width-100 gn-p-0">
+      Điều khiển
+      <div class="gn-float-right">
+        <button nz-button nzType="primary" class="gn-bg-warning gn-mr-5" (click)="handleNotifyCommand()"><i class="las la-bell "></i> Notify</button>
+        <button nz-button nzType="primary" class="gn-mr-5" (click)="handleRefreshCommand()"><i class="las la-redo-alt "></i> Refresh</button>
+        <button nz-button nzType="primary" (click)="handleSubmitCommand()"><i class="las la-plus "></i> Add</button>
+      </div>
+    </h2>
+    <div class="gn-bg-white gn-float-left gn-width-100">
+      <div class="gn-mb-0">
+        <app-geneat-form
+          class="placeholder-first-bold"
+          #formCommand
+          [small]="true"
+          [noLabel]="true"
+          [columns]="columnsTitleDescription"
+          [loading]="isLoading"
+          [values]="data"
+        ></app-geneat-form>
+      </div>
+      <h3 class="gn-color-info">Lệnh chờ thực thi (từ trên xuống):</h3>
+      <app-geneat-datatable
+        class="table-one-button"
+        [showCount]="false"
+        [showHeader]="false"
+        [save]="false"
+        [showSearch]="false"
+        [columns]="columnsTitleDescription"
+        [data]="command"
+        [showPagination]="false"
+        rowHeight="25px"
+        rowClass="gn-bg-yellow gn-font-13"
+      ></app-geneat-datatable>
+
+      <div nz-row class="gn-mt-10 border-bottom-gray">
+        <div nz-col [nzSpan]="12">
+          <h4 class="gn-color-info">CMD Type</h4>
+          <nz-radio-group [(ngModel)]="typeDevice">
+            <label nz-radio nzValue="PUSH_CMD">Push</label>
+            <label nz-radio nzValue="PULL_CMD">Pull</label>
+          </nz-radio-group>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <h4 class="gn-color-info">Service</h4>
+          <nz-radio-group [(ngModel)]="serviceDevice">
+            <label nz-radio nzValue="MAINTAIN">Maintain</label>
+            <label nz-radio nzValue="MAIN">Main</label>
+          </nz-radio-group>
+        </div>
+      </div>
+
+      <table class="gn-table gn-table-border-bottom gn-table-cmd">
+        <tbody>
+        <tr>
+          <th colspan="3">Click 2 lần để thêm lệnh</th>
+        </tr>
+        <tr>
+          <td class="gn-text-center">
+            <button
+              nz-button
+              nzType="primary"
+              class="gn-bg-warning"
+              (click)="handleAddCommand('beatlevel', '1')"
+            >beatlevel 1</button>
+            <br /><span class="gn-font-13">Nhận lệnh mỗi 5s</span>
+          </td>
+          <td class="gn-text-center">
+            <button
+              nz-button
+              nzType="primary"
+              class="gn-bg-warning"
+              (click)="handleAddCommand('push_config', '')"
+            >push_config</button>
+            <br />Đẩy config lên server
+          </td>
+          <td class="gn-text-center">
+            <button
+              nz-button
+              nzType="primary"
+              class="gn-bg-warning"
+              (click)="handleAddCommand('pull_config', '')"
+            >pull_config</button>
+            <br />Lấy config từ server
+          </td>
+        </tr>
+        <tr>
+          <td></td>
+          <td class="gn-text-center">
+            <button nz-button nzType="primary" class="gn-bg-warning"
+              (click)="handleAddCommand('push_camera', '')">push_camera</button>
+            <br />Đẩy camera lên server
+          </td>
+          <td class="gn-text-center">
+            <button nz-button nzType="primary" class="gn-bg-warning" (click)="handleAddCommand('pull_camera', '')">pull_camera
+            </button>
+            <br /><span class="gn-font-13">Lấy camera từ server</span>
+          </td>
+        </tr>
+        <tr>
+          <td class="gn-text-center">
+            <button
+              nz-button
+              nzType="primary"
+              class="gn-bg-warning"
+              (click)="handleAddCommand('soft_reset', '1')"
+            >soft_reset</button>
+            <br />Reset ứng dụng
+          </td>
+          <td class="gn-text-center">
+            <button
+              nz-button
+              nzType="primary"
+              nzDanger
+              (click)="handleAddCommand('cleardb', '')"
+            >cleardb</button>
+            <br />Xóa DB
+          </td>
+          <td class="gn-text-center">
+            <button
+              nz-button
+              nzType="primary"
+              nzDanger
+              (click)="handleAddCommand('reset_tmate', '')"
+            >reset_tmate</button>
+            <br />Reset Tmate
+          </td>
+        </tr>
+        <tr>
+          <td class="gn-text-center">
+            <button
+              nz-button
+              nzType="primary"
+              class="gn-bg-warning"
+              (click)="handleAddCommand('capture_test', '1000')"
+            >capture_test</button>
+            <br />Chụp test 1000px
+          </td>
+          <td class="gn-text-center">
+            <button
+              nz-button
+              nzType="primary"
+              class="gn-bg-warning"
+              (click)="handleAddCommand('capture_test_d', '1000')"
+            >capture_test_d</button>
+            <br />Chụp test với cửa
+          </td>
+          <td class="gn-text-center">
+            <button
+              nz-button
+              nzType="primary"
+              nzDanger
+              (click)="handleAddCommand('capture', '')"
+            >capture</button>
+            <br />Chụp ảnh
+          </td>
+        </tr>
+        <tr>
+          <td class="gn-text-center">
+            <button
+              nz-button
+              nzType="primary"
+              class="gn-bg-warning"
+              (click)="handleAddCommand('noup', '00001')"
+            >noup_file</button>
+            <br />Không up 1 file
+          </td>
+          <td class="gn-text-center">
+            <button
+              nz-button
+              nzType="primary"
+              class="gn-bg-warning"
+              (click)="handleAddCommand('reup', '00001')"
+            >reup_file</button>
+            <br />Re-up 1 file
+          </td>
+          <td class="gn-text-center">
+            <button
+              nz-button
+              nzType="primary"
+              nzDanger
+              (click)="handleAddCommand('execdb', '')"
+            >execdb</button>
+            <br />Run db cmd
+          </td>
+        </tr>
+        <tr>
+          <td class="gn-text-center">
+            <button
+              nz-button
+              nzType="primary"
+              class="gn-bg-warning"
+              (click)="handleAddCommand('resetcamera', '')"
+            >reset_cam</button>
+            <br />Reset camera
+          </td>
+          <td class="gn-text-center">
+            <button
+              nz-button
+              nzType="primary"
+              class="gn-bg-warning"
+              (click)="handleAddCommand('action', 'CAMON')"
+            >cam_on</button>
+            <br />Turn on cam
+          </td>
+          <td class="gn-text-center">
+            <button
+              nz-button
+              nzType="primary"
+              class="gn-bg-warning"
+              (click)="handleAddCommand('action', 'CAMOFF')"
+            >cam_off</button>
+            <br />Turn off cam
+          </td>
+        </tr>
+        <tr>
+          <td class="gn-text-center">
+            <button nz-button nzType="primary" class="gn-bg-warning" (click)="handleAddCommand('resetwifi', '')">resetwifi</button>
+            <br />Reset wifi
+          </td>
+          <td class="gn-text-center">
+            <button
+              nz-button
+              nzType="primary"
+              class="gn-bg-warning"
+              (click)="handleAddCommand('closedoor', '')"
+            >closedoor</button>
+            <br />Close door
+          </td>
+          <td class="gn-text-center">
+            <button
+              nz-button
+              nzType="primary"
+              class="gn-bg-warning"
+              (click)="handleAddCommand('opendoor', '')"
+            >opendoor</button>
+            <br />Open door
+          </td>
+        </tr>
+
+        <tr>
+          <td class="gn-text-center">
+            <button nz-button nzType="primary" class="gn-bg-warning" (click)="handleAddCommand('clearphoto', '100')">clearphoto</button>
+            <br />clearphoto
+          </td>
+          <td class="gn-text-center">
+            <button nz-button nzType="primary" class="gn-bg-warning" (click)="handleAddCommand('resetwifi', '')">resetwifi</button>
+            <br />Reset wifi
+          </td>
+          <td class="gn-text-center">
+            <button nz-button nzType="primary" class="gn-bg-warning" (click)="handleAddCommand('resetwifi', '')">resetwifi</button>
+            <br />Reset wifi
+          </td>
+        </tr>
+
+
+        <tr>
+          <th colspan="3">Update máy</th>
+        </tr>
+        <tr>
+          <td class="gn-text-center">
+            <button
+              nz-button
+              nzType="primary"
+              (click)="handleAddCommand('upgrade', '')"
+            >upgrade</button>
+            <br />Nâng cấp
+          </td>
+          <td class="gn-text-center">
+            <button
+              nz-button
+              nzType="primary"
+              (click)="handleAddCommand('up_backup', '')"
+            >up backup</button>
+            <br />Nâng cấp Backup
+          </td>
+        </tr>
+        <tr>
+          <th colspan="3">Log view</th>
+        </tr>
+        <tr>
+          <td class="gn-text-center">
+            <button
+              nz-button
+              nzType="primary"
+              class="gn-bg-warning"
+              (click)="handleAddCommand('up_log', '')"
+            >up_log</button>
+            <br />Up log
+          </td>
+          <td class="gn-text-center">
+            <button
+              nz-button
+              nzType="primary"
+              class="gn-bg-warning"
+              (click)="handleAddCommand('exec', 'sudo tail /home/pi/tlog/timelapse.log')"
+            >xem log</button>
+            <br />Xem service log
+          </td>
+          <td class="gn-text-center">
+            <button
+              nz-button
+              nzType="primary"
+              class="gn-bg-warning"
+              (click)="handleAddCommand('exec', 'sudo tail /home/pi/tdata/uart.lock.log')"
+            >uart log</button>
+            <br />Xem Uart log
+          </td>
+        </tr>
+        <tr>
+          <td class="gn-text-center">
+            <button
+              nz-button
+              nzType="primary"
+              class="gn-bg-warning"
+              (click)="handleAddCommand('up_log_zip', '')">up_log_zip</button>
+            <br />Up log zip
+          </td>
+        </tr>
+        <tr>
+          <th colspan="3">Analog commands</th>
+        </tr>
+        <tr>
+          <td class="gn-text-center">
+            <button
+              nz-button
+              nzType="primary"
+              nzDanger
+              (click)="handleAddCommand('action', 'PIOFF 360')"
+            >PIOFF 6</button>
+            <br />Tắt pi 6p
+          </td>
+          <td class="gn-text-center">
+            <button
+              nz-button
+              nzType="primary"
+              nzDanger
+              (click)="handleAddCommand('action', 'PIOFF 900')"
+            >PIOFF 15</button>
+            <br />Tắt pi 15p
+          </td>
+          <td class="gn-text-center">
+            <button
+              nz-button
+              nzType="primary"
+              nzDanger
+              (click)="handleAddCommand('action', 'PIOFF 1800')"
+            >PIOFF 30</button>
+            <br />Tắt pi 30p
+          </td>
+        </tr>
+        <tr>
+          <td class="gn-text-center">
+            <button
+              nz-button
+              nzType="primary"
+              class="gn-bg-warning"
+              (click)="handleAddCommand('action', 'BATVOLT')"
+            >BATVOLT</button>
+            <br />Thông số pin
+          </td>
+          <td class="gn-text-center">
+            <button
+              nz-button
+              nzType="primary"
+              class="gn-bg-warning"
+              (click)="handleAddCommand('action', 'DOORSTATE')"
+            >DOORSTATE</button>
+            <br />Trạng thái cửa
+          </td>
+          <td class="gn-text-center">
+            <button
+              nz-button
+              nzType="primary"
+              class="gn-bg-warning"
+              (click)="handleAddCommand('action', 'GETPSRC')"
+            >GETPSRC</button>
+            <br />Trạng thái nguồn
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div nz-col nzXs="24" nzSm="24" nzMd="12" nzLg="7">
+    <h2 class="gn-float-left gn-width-100 gn-p-0">
+      Cấu hình
+      <div class="gn-float-right">
+        <button nz-button nzType="primary" class="gn-mr-5" (click)="onLoadDeviceConfig()"><i class="las la-redo-alt "></i> Refresh</button>
+        <button nz-button nzType="primary" (click)="handleSubmitConfig()"><i class="las la-save"></i> Save all</button>
+      </div>
+    </h2>
+    <div class="gn-bg-white gn-float-left gn-width-100">
+      <ul class="gn-list-table">
+      <ng-template ngFor let-i="index" let-data [ngForOf]="config">
+        <li>
+          <div><span class="gn-color-blue gn-font-semibold" (click)="handleChangeInput(data.name, true)">{{data.name}}</span> <span *ngIf="!configShow[data.name]" class="gn-ml-5 gn-font-semibold">{{data.value}}</span></div>
+          <div *ngIf="configShow[data.name]" nz-row [nzGutter]="2" class="gn-p-5">
+            <div nz-col nzFlex="auto"><input nz-input placeholder="Basic usage" [(ngModel)]="data.value"/></div>
+            <div nz-col nzFlex="140px">
+              <button nz-button nzType="primary" class="gn-mr-5" (click)="handleChangeInput(data.name, false)"><i class="las la-save"></i> OK</button>
+              <button nz-button nzType="primary" (click)="handlePushInput(data.name, false, data.value)"><i class="las la-rocket"></i> Push</button>
+            </div>
+          </div>
+        </li>
+      </ng-template>
+      </ul>
+    </div>
+  </div>
+
+  <div nz-col nzXs="24" nzSm="24" nzMd="24" nzLg="24" class="gn-text-center gn-pb-10 gn-mt-20">
+    <button nz-popconfirm
+        nzPopconfirmTitle="Bạn chắc chắn muốn xóa thiết bị này?"
+        (nzOnConfirm)="handleConfirmDelete()"
+        nz-button nzType="primary" nzDanger>Xóa thiết bị</button>
+  </div>
+
+</div>
+
